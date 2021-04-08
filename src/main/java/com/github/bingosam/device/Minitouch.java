@@ -3,7 +3,6 @@ package com.github.bingosam.device;
 import com.android.ddmlib.*;
 import com.github.bingosam.constant.Constants;
 import com.github.bingosam.util.LibUtils;
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
@@ -17,7 +16,6 @@ import java.io.IOException;
  *
  * @author zhang kunbin
  */
-@Getter
 @Log4j2
 public class Minitouch extends BaseStfService {
 
@@ -40,7 +38,7 @@ public class Minitouch extends BaseStfService {
             return;
         }
 
-        if (apiLevel < Constants.MIN_API_LEVEL_TOUCH) {
+        if (useTouch(apiLevel)) {
             String abi = device.getDevice().getProperty(IDevice.PROP_DEVICE_CPU_ABI);
             device.getDevice().pushFile(LibUtils.getMinitouchBin(abi, apiLevel), Constants.REMOTE_PATH_MINITOUCH);
             device.getDevice().executeShellCommand("chmod 0755 " + Constants.REMOTE_PATH_MINITOUCH, NullOutputReceiver.getReceiver());
@@ -78,7 +76,7 @@ public class Minitouch extends BaseStfService {
             AdbCommandRejectedException,
             ShellCommandUnresponsiveException,
             IOException {
-        if (apiLevel < Constants.MIN_API_LEVEL_TOUCH) {
+        if (useTouch(apiLevel)) {
             //use minitouch
             CollectingOutputReceiver receiver = new CollectingOutputReceiver();
             device.getDevice().executeShellCommand(
@@ -104,6 +102,10 @@ public class Minitouch extends BaseStfService {
             return output.split(":")[1].trim();
         }
         return null;
+    }
+
+    private boolean useTouch(int apiLevel) {
+        return apiLevel < Constants.MIN_API_LEVEL_TOUCH_AGENT;
     }
 
     public static class StfAgentReceiver extends BaseServiceStartReceiver {

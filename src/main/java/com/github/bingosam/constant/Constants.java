@@ -58,7 +58,7 @@ public class Constants {
     /**
      * minitouch no support Android 10 and up, use minitouchagent instead
      */
-    public static final int MIN_API_LEVEL_TOUCH = 29;
+    public static final int MIN_API_LEVEL_TOUCH_AGENT = 29;
 
     /**
      * STFService constants
@@ -70,10 +70,5 @@ public class Constants {
     public static final String CLS_STF_AGENT = PKG_STF_SERVICE + ".Agent";
 
     public static final String SOCKET_NAME_MINITOUCH_AGENT = "minitouchagent";
-
-    /**
-     * max port
-     */
-    public static final int PORT_MAX = 59999;
 
 }
