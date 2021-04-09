@@ -1,4 +1,4 @@
-# AndroidDevice
+# MinicapAndTouch
 
 1. Connect Android devices through adb.
 2. Capture the realtime screen data from minicap socket.
