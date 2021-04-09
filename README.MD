@@ -1,3 +1,8 @@
+# AndroidDevice
+
+1. Connect Android devices through adb.
+2. Capture the realtime screen data from minicap socket.
+3. Auto select minitouch or minitouch agent to control the Android devices. 
 
 # Requirements
 
