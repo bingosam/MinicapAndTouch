@@ -6,15 +6,12 @@ import com.android.ddmlib.TimeoutException;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * <p>Title: Module Information  </p>
  * <p>Description: Function Description  </p>
  * <p>Copyright: Copyright (c) 2021     </p>
- * <p>Company: ND Co., Ltd.       </p>
  * <p>Create Time: 2021/4/6          </p>
  *
  * @author zhang kunbin
@@ -23,7 +20,7 @@ class PortManager {
 
     private static final Object LOCK = new Object();
 
-    private static Map<String, Integer> PORTS = new HashMap<>();
+    private static final Map<String, Integer> PORTS = new HashMap<>();
 
     private static final int MIN_PORT = 11017;
 

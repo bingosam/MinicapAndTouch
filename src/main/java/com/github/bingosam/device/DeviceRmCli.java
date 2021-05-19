@@ -20,7 +20,6 @@ import java.util.function.Consumer;
  * <p>Title: Module Information  </p>
  * <p>Description: Function Description  </p>
  * <p>Copyright: Copyright (c) 2021     </p>
- * <p>Company: ND Co., Ltd.       </p>
  * <p>Create Time: 2021/4/1          </p>
  *
  * @author zhang kunbin
