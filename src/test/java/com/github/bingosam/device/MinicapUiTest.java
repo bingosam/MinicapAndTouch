@@ -53,7 +53,7 @@ public class MinicapUiTest extends BaseDeviceTest {
                 @SneakyThrows
                 @Override
                 public void mouseReleased(MouseEvent e) {
-                    cli.touchUp(e.getX(), e.getY());
+                    cli.touchUp();
                 }
 
                 @Override
