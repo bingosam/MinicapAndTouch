@@ -69,7 +69,7 @@ public class MinicapCli implements Closeable, Runnable {
         try {
             reader.tryRead();
         } catch (IOException e) {
-            if(socket.isClosed()) {
+            if (socket.isClosed()) {
                 return;
             }
             log.error("Read stream from minicap", e);
@@ -94,6 +94,9 @@ public class MinicapCli implements Closeable, Runnable {
             byte[] buffer = new byte[4096];
             while (!Thread.currentThread().isInterrupted()) {
                 int len = stream.read(buffer);
+                if (len == -1) {
+                    throw new IOException("eof");
+                }
                 if (len > 0) {
                     for (int cursor = 0; cursor < len; ) {
                         int val = buffer[cursor] & 0xFF;
@@ -182,7 +185,7 @@ public class MinicapCli implements Closeable, Runnable {
             throw new IOException("Frame body does not start with JPG header");
         }
 
-        threadPool.submit(() -> {
+        threadPool.execute(() -> {
             try {
                 BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytes));
                 if (null == image) {

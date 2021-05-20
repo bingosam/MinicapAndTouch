@@ -13,6 +13,9 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * <p>Title: Module Information  </p>
@@ -34,9 +37,16 @@ public class Minicap extends BaseStfService
 
     private double scale;
 
+    private final List<Consumer<Size>> sizeConsumers;
+
     public Minicap(DeviceWrap device) {
+        this(device, Collections.emptyList());
+    }
+
+    public Minicap(DeviceWrap device, List<Consumer<Size>> sizeConsumers) {
         super(device, Constants.BIN_MINICAP);
         maxHeight = -1;
+        this.sizeConsumers = sizeConsumers;
     }
 
     @Override
@@ -71,6 +81,7 @@ public class Minicap extends BaseStfService
             scale = 1;
             outputSize = new SizeUnmodifiable(getDevice().getSize());
         }
+        getSizeConsumers().forEach(consumer -> consumer.accept(outputSize));
 
         String cmd = String.format(Constants.CMD_MINICAP + " -P %dx%d@%dx%d/0",
                 getDevice().getSize().getWidth(),

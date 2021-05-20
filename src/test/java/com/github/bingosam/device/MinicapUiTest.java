@@ -93,39 +93,20 @@ public class MinicapUiTest extends BaseDeviceTest {
             addKeyEventButton(btnPanel, "Power", device, 26);
 
             cli.registerImageConsumer(image -> {
-                int w = image.getWidth(null);
-                int h = image.getHeight(null);
-                ui.setSize(w, h + 70);
-                panel.setSize(w, h);
                 panel.getGraphics().drawImage(
                         image, 0, 0, null
                 );
             });
+            cli.registerSizeConsumer(size -> {
+                ui.setSize(size.getWidth(), size.getHeight() + 70);
+                panel.setSize(size.getWidth(), size.getHeight());
+                ui.setVisible(true);
+            });
             cli.start(720);
-            ui.setVisible(true);
-            ui.pack();
             while (true) {
                 Thread.sleep(500);
             }
         }
-    }
-
-    public static void main(String[] args) throws InterruptedException,
-            AdbCommandRejectedException,
-            SyncException,
-            ShellCommandUnresponsiveException,
-            IOException,
-            TimeoutException,
-            InstallException {
-        String deviceId = "";
-        if (args.length > 0) {
-            deviceId = args[0];
-        }
-
-        Adb adb = new Adb();
-        IDevice device = adb.getDevice(deviceId);
-        DeviceWrap deviceWrap = new DeviceWrap(device);
-        connectDevice(deviceWrap);
     }
 
     private static void addKeyEventButton(JPanel panel, String text, DeviceWrap device, int keyEvent) {
@@ -138,32 +119,6 @@ public class MinicapUiTest extends BaseDeviceTest {
             }
         });
         panel.add(button);
-    }
-
-    public static class Adb {
-
-        private AndroidDebugBridge androidDebugBridge;
-
-        public Adb() throws InterruptedException {
-            AndroidDebugBridge.init(false);
-            androidDebugBridge = AndroidDebugBridge.createBridge("adb", true);
-            while (!androidDebugBridge.hasInitialDeviceList()) {
-                Thread.sleep(500L);
-            }
-        }
-
-        public IDevice getDevice(String deviceId) {
-            IDevice[] devices = androidDebugBridge.getDevices();
-            if (null == deviceId || deviceId.trim().isEmpty()) {
-                return devices[0];
-            }
-            for (IDevice dev : devices) {
-                if (dev.getSerialNumber().equals(deviceId)) {
-                    return dev;
-                }
-            }
-            return null;
-        }
     }
 
 }

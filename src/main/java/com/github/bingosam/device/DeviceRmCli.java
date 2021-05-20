@@ -1,7 +1,9 @@
 package com.github.bingosam.device;
 
 import com.android.ddmlib.*;
+import com.android.ddmlib.TimeoutException;
 import com.github.bingosam.concurrent.NamedThreadFactory;
+import com.github.bingosam.entity.Size;
 
 import java.awt.*;
 import java.io.Closeable;
@@ -10,10 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 /**
@@ -34,6 +33,8 @@ public class DeviceRmCli implements Closeable {
 
     private final List<Consumer<Image>> imageConsumers;
 
+    private final List<Consumer<Size>> sizeConsumers;
+
     private final ExecutorService threadPool;
 
     private MinitouchCli minitouchCli;
@@ -42,11 +43,17 @@ public class DeviceRmCli implements Closeable {
 
     @SafeVarargs
     public DeviceRmCli(DeviceWrap device, Consumer<Image>... imageConsumers) {
+        this(device, imageConsumers, new Consumer[0]);
+    }
+
+    public DeviceRmCli(DeviceWrap device, Consumer<Image>[] imageConsumers, Consumer<Size>[] sizeConsumers) {
         this.device = device;
-        minicap = new Minicap(this.device);
-        minitouch = new Minitouch(this.device);
         this.imageConsumers = Collections.synchronizedList(new ArrayList<>());
         this.imageConsumers.addAll(Arrays.asList(imageConsumers));
+        this.sizeConsumers = Collections.synchronizedList(new ArrayList<>());
+        this.sizeConsumers.addAll(Arrays.asList(sizeConsumers));
+        minicap = new Minicap(this.device, this.sizeConsumers);
+        minitouch = new Minitouch(this.device);
         this.threadPool = new ThreadPoolExecutor(1, 1,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingDeque<>(),
@@ -69,7 +76,13 @@ public class DeviceRmCli implements Closeable {
         minicapCli = new MinicapCli(device, socket, imageConsumers);
         socket = minitouch.start();
         minitouchCli = new MinitouchCli(device, minicap, socket);
-        threadPool.submit(minicapCli);
+        Future<?> task = threadPool.submit(minicapCli);
+        try {
+            task.get(300, TimeUnit.MILLISECONDS);
+            throw new IOException("The thread of minicap receiver shutdown abnormal.");
+        } catch (ExecutionException | java.util.concurrent.TimeoutException e) {
+            //
+        }
     }
 
     public void touchDown(int x, int y) throws IOException {
@@ -86,6 +99,10 @@ public class DeviceRmCli implements Closeable {
 
     public void registerImageConsumer(Consumer<Image> consumer) {
         imageConsumers.add(consumer);
+    }
+
+    public void registerSizeConsumer(Consumer<Size> consumer) {
+        sizeConsumers.add(consumer);
     }
 
     @Override

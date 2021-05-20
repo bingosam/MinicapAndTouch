@@ -56,7 +56,7 @@ public abstract class BaseStfService implements IStfService {
     protected void doStart(String cmd, BaseServiceStartReceiver receiver)
             throws InterruptedException {
         serviceStartReceiver = receiver;
-        threadPool.submit(() -> {
+        threadPool.execute(() -> {
             try {
                 log.info("start " + receiver.getServiceName());
                 device.getDevice().executeShellCommand(cmd, receiver, 0, TimeUnit.MILLISECONDS);
