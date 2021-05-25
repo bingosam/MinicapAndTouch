@@ -1,4 +1,4 @@
-# [English](README.MD)
+# [English](README.md)
 
 # MinicapAndTouch
 
