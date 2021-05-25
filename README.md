@@ -1,3 +1,5 @@
+# [中文](README_Chinese.md)
+
 # MinicapAndTouch
 
 1. Connect Android devices through adb.
@@ -8,7 +10,7 @@
 
 - [minicap](https://github.com/DeviceFarmer/minicap/releases) 
 
-download devicefarmer-minicap-prebuilt-{version}.tgz and extract  prebuilt/* into libs/stf
+download devicefarmer-minicap-prebuilt-{version}.tgz and extract  package/prebuilt/* into libs/stf
 - [minitouch](https://github.com/DeviceFarmer/minitouch) for Android 9 and down
 
 [build](https://github.com/DeviceFarmer/minitouch#Building) and then copy the minitouch/libs/* into ./libs/stf/
