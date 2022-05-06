@@ -20,8 +20,12 @@ public class Minitouch extends BaseStfService {
 
     private String stfServiceInstalledPath;
 
+    private final int apiLevel;
+
     public Minitouch(DeviceWrap device) {
         super(device, Constants.BIN_MINITOUCH);
+        String sdk = device.getDevice().getProperty(IDevice.PROP_BUILD_API_LEVEL);
+        apiLevel = Integer.parseInt(sdk);
     }
 
     @Override
@@ -31,13 +35,11 @@ public class Minitouch extends BaseStfService {
             IOException,
             SyncException,
             InstallException {
-        String sdk = device.getDevice().getProperty(IDevice.PROP_BUILD_API_LEVEL);
-        int apiLevel = Integer.parseInt(sdk);
-        if (isInitialized(apiLevel)) {
+        if (isInitialized()) {
             return;
         }
 
-        if (useTouch(apiLevel)) {
+        if (isUseTouch()) {
             String abi = device.getDevice().getProperty(IDevice.PROP_DEVICE_CPU_ABI);
             device.getDevice().pushFile(LibUtils.getMinitouchBin(abi, apiLevel), Constants.REMOTE_PATH_MINITOUCH);
             device.getDevice().executeShellCommand("chmod 0755 " + Constants.REMOTE_PATH_MINITOUCH, NullOutputReceiver.getReceiver());
@@ -71,11 +73,15 @@ public class Minitouch extends BaseStfService {
         return socketName;
     }
 
-    private boolean isInitialized(int apiLevel) throws TimeoutException,
+    public boolean isUseTouch() {
+        return apiLevel < Constants.MIN_API_LEVEL_TOUCH_AGENT;
+    }
+
+    private boolean isInitialized() throws TimeoutException,
             AdbCommandRejectedException,
             ShellCommandUnresponsiveException,
             IOException {
-        if (useTouch(apiLevel)) {
+        if (isUseTouch()) {
             //use minitouch
             CollectingOutputReceiver receiver = new CollectingOutputReceiver();
             device.getDevice().executeShellCommand(
@@ -101,10 +107,6 @@ public class Minitouch extends BaseStfService {
             return output.split(":")[1].trim();
         }
         return null;
-    }
-
-    private boolean useTouch(int apiLevel) {
-        return apiLevel < Constants.MIN_API_LEVEL_TOUCH_AGENT;
     }
 
     public static class StfAgentReceiver extends BaseServiceStartReceiver {

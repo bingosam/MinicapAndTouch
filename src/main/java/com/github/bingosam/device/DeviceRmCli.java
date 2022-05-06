@@ -1,9 +1,10 @@
 package com.github.bingosam.device;
 
-import com.android.ddmlib.*;
 import com.android.ddmlib.TimeoutException;
+import com.android.ddmlib.*;
 import com.github.bingosam.concurrent.NamedThreadFactory;
 import com.github.bingosam.entity.Size;
+import lombok.extern.log4j.Log4j2;
 
 import java.awt.*;
 import java.io.Closeable;
@@ -23,6 +24,7 @@ import java.util.function.Consumer;
  *
  * @author zhang kunbin
  */
+@Log4j2
 public class DeviceRmCli implements Closeable {
 
     private final DeviceWrap device;
@@ -37,7 +39,7 @@ public class DeviceRmCli implements Closeable {
 
     private final ExecutorService threadPool;
 
-    private MinitouchCli minitouchCli;
+    private DeviceController deviceController;
 
     private MinicapCli minicapCli;
 
@@ -70,12 +72,26 @@ public class DeviceRmCli implements Closeable {
             SyncException {
         minicap.setMaxHeight(maxHeight);
         minicap.init();
-        minitouch.init();
+
+        boolean initMiniTouchAgentFailed = false;
+        try {
+            minitouch.init();
+        } catch (IllegalStateException e) {
+            if (minitouch.isUseTouch()) {
+                throw e;
+            }
+            initMiniTouchAgentFailed = true;
+            log.error("Failed to init minitouch.", e);
+        }
 
         String socket = minicap.start();
         minicapCli = new MinicapCli(device, socket, imageConsumers);
-        socket = minitouch.start();
-        minitouchCli = new MinitouchCli(device, minicap, socket);
+        if (initMiniTouchAgentFailed) {
+            deviceController = new AdbCli(device, minicap);
+        } else {
+            socket = minitouch.start();
+            deviceController = new MinitouchCli(device, minicap, socket);
+        }
         Future<?> task = threadPool.submit(minicapCli);
         try {
             task.get(300, TimeUnit.MILLISECONDS);
@@ -86,15 +102,19 @@ public class DeviceRmCli implements Closeable {
     }
 
     public void touchDown(int x, int y) throws IOException {
-        minitouchCli.down(x, y);
+        deviceController.down(x, y);
     }
 
-    public void touchUp() throws IOException {
-        minitouchCli.up();
+    public void touchUp(int x, int y) throws IOException {
+        deviceController.up(x, y);
     }
 
     public void touchMove(int x, int y) throws IOException {
-        minitouchCli.move(x, y);
+        deviceController.move(x, y);
+    }
+
+    public void swipe(int x1, int y1, int x2, int y2, int duration) throws IOException {
+        deviceController.swipe(x1, y1, x2, y2, duration);
     }
 
     public void registerImageConsumer(Consumer<Image> consumer) {
@@ -105,11 +125,15 @@ public class DeviceRmCli implements Closeable {
         sizeConsumers.add(consumer);
     }
 
+    public boolean isUseMinitouch() {
+        return deviceController instanceof MinitouchCli;
+    }
+
     @Override
     public void close() throws IOException {
         threadPool.shutdown();
-        if (null != minitouchCli) {
-            minitouchCli.close();
+        if (null != deviceController) {
+            deviceController.close();
         }
         if (null != minicapCli) {
             minicapCli.close();

@@ -40,6 +40,16 @@ public class DeviceWrap {
         device.executeShellCommand(cmd, NullOutputReceiver.getReceiver());
     }
 
+    public void tap(int x, int y) throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException, IOException {
+        String cmd = String.format("input tap %d %d", x, y);
+        device.executeShellCommand(cmd, NullOutputReceiver.getReceiver());
+    }
+
+    public void swipe(int x1, int y1, int x2, int y2, int duration) throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException, IOException {
+        String cmd = String.format("input swipe %d %d %d %d %d", x1, y1, x2, y2, duration);
+        device.executeShellCommand(cmd, NullOutputReceiver.getReceiver());
+    }
+
     private Size loadSize() throws TimeoutException,
             AdbCommandRejectedException,
             ShellCommandUnresponsiveException,
