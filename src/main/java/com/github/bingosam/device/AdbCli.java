@@ -44,7 +44,7 @@ public class AdbCli implements DeviceController {
             if(point.equals(real)) {
                 device.tap(real.getX(), real.getY());
             } else {
-                doSwipe(point.getX(), point.getY(), real.getX(), real.getY(), 10);
+                doSwipe(point.getX(), point.getY(), real.getX(), real.getY(), 100);
             }
         } catch (TimeoutException | AdbCommandRejectedException | ShellCommandUnresponsiveException e) {
             throw new IOException(e);
