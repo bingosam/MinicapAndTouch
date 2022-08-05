@@ -94,11 +94,11 @@ public class MinicapUiTest extends BaseDeviceTest {
 
             cli.registerImageConsumer(image -> {
                 panel.getGraphics().drawImage(
-                        image, 0, 0, null
+                        image, 12, 0, null
                 );
             });
             cli.registerSizeConsumer(size -> {
-                ui.setSize(size.getWidth(), size.getHeight() + 70);
+                ui.setSize(size.getWidth() + 40, size.getHeight() + 70);
                 panel.setSize(size.getWidth(), size.getHeight());
                 ui.setVisible(true);
             });
