@@ -1,7 +1,9 @@
 package com.github.bingosam.device;
 
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.SyncException;
 import com.android.ddmlib.TimeoutException;
-import com.android.ddmlib.*;
 import com.github.bingosam.concurrent.NamedThreadFactory;
 import com.github.bingosam.entity.Size;
 import lombok.extern.log4j.Log4j2;
@@ -67,31 +69,22 @@ public class DeviceRmCli implements Closeable {
             TimeoutException,
             AdbCommandRejectedException,
             ShellCommandUnresponsiveException,
-            InstallException,
             InterruptedException,
             SyncException {
         minicap.setMaxHeight(maxHeight);
         minicap.init();
 
-        boolean initMiniTouchAgentFailed = false;
         try {
             minitouch.init();
-        } catch (IllegalStateException e) {
-            if (minitouch.isUseTouch()) {
-                throw e;
-            }
-            initMiniTouchAgentFailed = true;
-            log.error("Failed to init minitouch.", e);
+            String socket = minitouch.start();
+            deviceController = new MinitouchCli(device, minicap, socket);
+        } catch (Exception e) {
+            log.error("Failed to start minitouch, use adb instead.", e);
+            deviceController = new AdbCli(device, minicap);
         }
 
         String socket = minicap.start();
         minicapCli = new MinicapCli(device, socket, imageConsumers);
-        if (initMiniTouchAgentFailed) {
-            deviceController = new AdbCli(device, minicap);
-        } else {
-            socket = minitouch.start();
-            deviceController = new MinitouchCli(device, minicap, socket);
-        }
         Future<?> task = threadPool.submit(minicapCli);
         try {
             task.get(300, TimeUnit.MILLISECONDS);
